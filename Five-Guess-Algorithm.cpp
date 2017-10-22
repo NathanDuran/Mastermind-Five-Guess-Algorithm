@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <iterator>
 #include <map>
 #include <ctime>
 
@@ -10,6 +9,8 @@ using namespace std;
 vector<int> getRandomCode();
 
 void createSet();
+
+void combinationRecursive(int combinationLength, int position, vector<int> &current, vector<int> &elements);
 
 string checkCode(vector<int> guess, vector<int> code);
 
@@ -27,13 +28,12 @@ vector<int> getNextGuess(vector<vector<int>> nextGuesses);
 
 static const int NUM_COLOURS = 6;
 static const int CODE_LENGTH = 4;
-static const int NUM_COMBINATIONS = 1296; //6^4
 static vector<vector<int>> combinations; //Master set of combinations 1111 to 6666
 static vector<vector<int>> candidateSolutions;
 static vector<vector<int>> nextGuesses;
-static string responsePegs;
 static vector<int> code;
 static vector<int> currentGuess;
+static string responsePegs;
 static bool won;
 static int turn;
 
@@ -72,7 +72,7 @@ int main() {
         cout << "= " << responsePegs << endl;
 
         //If the response is four colored pegs, the game is won
-        if (responsePegs =="BBBB") {
+        if (responsePegs == "BBBB") {
             won = true;
             cout << "Game Won!" << endl;
             break;
@@ -114,35 +114,28 @@ vector<int> getRandomCode() {
 
 void createSet() {
 
-    int currentCombination = 1111;
-    int max = NUM_COLOURS;
-    int min = 1;
-    int i = 0;
-    vector<int> tmp;
+    vector<int> current(CODE_LENGTH, 0);
+    vector<int> elements;
 
-    while (currentCombination <= 6666) {
-        int a = currentCombination % 10;
-        int b = currentCombination / 10 % 10;
-        int c = currentCombination / 100 % 10;
-        int d = currentCombination / 1000 % 10;
-
-        if (a > max || a < min ||
-            b > max || b < min ||
-            c > max || c < min ||
-            d > max || d < min) {
-            currentCombination++;
-        } else {
-            tmp.push_back(d);
-            tmp.push_back(c);
-            tmp.push_back(b);
-            tmp.push_back(a);
-            combinations.push_back(tmp);
-            tmp.clear();
-            currentCombination++;
-            i++;
-        }
+    for (int i = 1; i <= NUM_COLOURS; ++i) {
+        elements.push_back(i);
     }
 
+    combinationRecursive(CODE_LENGTH, 0, current, elements);
+}
+
+void combinationRecursive(int combinationLength, int position, vector<int> &current, vector<int> &elements) {
+
+    if (position >= combinationLength) {
+        combinations.push_back(current);
+        return;
+    }
+
+    for (int j = 0; j < elements.size(); ++j) {
+        current[position] = elements[j];
+        combinationRecursive(combinationLength, position + 1, current, elements);
+    }
+    return;
 }
 
 string checkCode(vector<int> guess, vector<int> code) {
